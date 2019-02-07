@@ -105,7 +105,7 @@ def angle(gx, gy):
 
 def compute_sift(img):
     sift = cv2.xfeatures2d.SIFT_create()
-    kp, des = sift.detectAndCopute(img, None)
+    kp, des = sift.detectAndCompute(img, None)
     return des
 
 def match_sift(img1, img2, threshhold=0.75):
@@ -145,6 +145,7 @@ while True:
             res = img - greyscale(prev)
             if np.sum(res) > max_change:
                 print("Changement de Plan  à l'image {}".format(i))
+            print(match_sift(prev, img))
 
         cv2.imshow("before", frame)
         cv2.imshow("after", res)
