@@ -6,6 +6,8 @@ Note envoyer à donatello.conte@univ-tours.fr avant le 10/02/19
 
 ## Exercice 1 : Prise en main de Python + OpenCV
 
+Le code *main* en Python va principalement ressembler à ceci:
+
 ```python
 # Mon script OpenCV : Video_processing
 # importation des librairies, opencv et numpy
@@ -165,22 +167,53 @@ while True:
     else:
         print('video ended')
         break
-    if cv2.waitKey(40) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
 ```
 
-Ceci permet de conserver en mémoire la frame précédente afin de pouvoir faire la différence entre avec la ligne:
+Ceci permet de conserver en mémoire la frame précédente (prev) afin de pouvoir faire la différence entre avec l'image actuelle (img):
 
 ```python
 res = img - greyscale(prev)
 ```
 
+![](img/pas_jimmy_substraction.png)
+
 ## Exercice 3 : Détection de changements de plan et résumé automatique de vidéo
 
 ### Question 1
+
+On modifie à nouveau le *main* pour détecter si un grand nombre de pixels change d'une image à l'autre. Si un gros changement se produit, cela est très certainement dû à un changement de plan dans la vidéo. On compte aussi les images afin de pouvoir afficher le numéro de l'image ou se produit le changement de plan.
+
+```python
+i = 0
+prev = None
+while True:
+    i += 1
+    ret, frame = cap.read()
+    max_change = frame.shape[0]*frame.shape[1]
+    epsilon = 0.1
+    max_change = (1-epsilon)*max_change*127
+    if ret:
+        img = frame.copy()
+        img = greyscale(img)
+
+        res = img
+        if prev is not None:
+            res = img - greyscale(prev)
+            if np.sum(res) > max_change:
+                print("Changement de Plan  à l'image {}".format(i))
+
+        cv2.imshow("before", frame)
+        cv2.imshow("after", res)
+
+        prev = frame
+    else:
+        print('video ended')
+        break
+    if cv2.waitKey(40) & 0xFF == ord('q'):
+        break
+```
+
+![changement de plan](img/changement_plan.png)
 
 ### Question 2
 
