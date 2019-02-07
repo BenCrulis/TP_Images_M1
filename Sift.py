@@ -69,34 +69,33 @@ def similarity_sift(img1, img2):
 
 
 folder = "/home/alex/PycharmProjects/tp_img_processing/github/plans/all"
+index_offset = 2
 
 imgs = []
-vecs = []
 
+print("Loading images in memory ...")
 for dirpath, dirnames, filnames in os.walk(folder):
     for file in filnames:
         if file.endswith(".png"):
             abspath = os.path.join(dirpath, file)
             img = cv2.imread(abspath, 0)
             imgs.append(img)
+print("Loading complete")
 
-for img in imgs:
-    kp, des = sift.detectAndCompute(img, None)
-    if len(kp) > 0:
-        tmp = []
-        for i in range(16):
-            tmp.extend([kp[0].pt[0], kp[0].pt[1], kp[0].angle])
-        vecs.append(tmp)
-    else:
-        vecs.append([0]*48)
+n = len(imgs)
+distance = np.zeros(shape=[n, n], dtype=np.float32)
 
-vecs = np.array(vecs)
+for i in range(n):
+    distance[i, i] = 0
 
-pca = PCA(n_components=10)
-pca.fit_transform(vecs)
+for i in range(n):
+    for j in range(i + 1):
+        d = 1 - similarity_sift(imgs[i], imgs[j])
+        distance[i, j] = d
+        distance[j, i] = d
+    print("Line", i, "done")
 
-kmeans = KMeans(n_clusters=4)
-kmeans.fit(pca.transform(vecs))
+pprint(distance)
 
-for i in range(len(kmeans.labels_)):
-    print(kmeans.labels_[i])
+np.save("distance.np", distance)
+

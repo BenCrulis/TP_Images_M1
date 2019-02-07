@@ -218,7 +218,9 @@ while True:
 ### Question 2
 
 ## Exercice 4 : Calcul de descripteurs SIFT, appariemment de descripteurs et résumé automatique de vidéo
-
+L'algorithme SIFT permet la construction d'une mesure de similarité entre images en comparant le ration de points sift similaires.
+En calculant les similaritées en tre toute les images on propose ensuite d'appliquer une methode de clustering.
+L'algorithme K-Medoids permet a la fois d'obtenir des groupes d'images (Plans) et des Medoids les representants (Résumé du plan).
 ### Question 1
 
 ### Question 2
