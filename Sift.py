@@ -51,8 +51,8 @@ def greyscale(img):
     g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return g
 
+# Sift "distance"
 sift = cv2.xfeatures2d.SIFT_create()
-
 def similarity_sift(img1, img2):
     kp1, des1 = sift.detectAndCompute(img1, None)
     kp2, des2 = sift.detectAndCompute(img2, None)
@@ -66,6 +66,19 @@ def similarity_sift(img1, img2):
         if m.distance < 0.75 * n.distance:
             good.append([m])
     return len(good) / float(len(kp2))
+
+def representant(images: list):
+    n = len(images)
+    distances = np.zeros(shape=[n, n], dtype=np.float32)
+    print("Computing distance Matrix")
+    for i in range(n):
+        for j in range(i + 1):
+            d = 1 - similarity_sift(imgs[i], imgs[j])
+            distance[i, j] = d
+            distance[j, i] = d
+    print("Distances compute complete")
+    costs = distances.sum(axis=1)
+    return costs.argmin(axis=0, fill_value=10e9)
 
 
 folder = "/home/alex/PycharmProjects/tp_img_processing/github/plans/all"
