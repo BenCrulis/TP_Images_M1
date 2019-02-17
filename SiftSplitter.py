@@ -5,7 +5,8 @@ import random as rd
 
 jimmy = "jimmy_fallon.mp4"
 save_folder = "./plans_sift"
-save = True
+save = False
+save_repr = True
 
 print("starting capture")
 
@@ -19,12 +20,12 @@ def greyscale(img):
 
 # Sift "distance"
 sift = cv2.xfeatures2d.SIFT_create(16)
+# BFMatcher with default params
+bf = cv2.BFMatcher()
 def similarity_sift(img1, img2):
     kp1, des1 = sift.detectAndCompute(img1, None)
     kp2, des2 = sift.detectAndCompute(img2, None)
 
-    # BFMatcher with default params
-    bf = cv2.BFMatcher()
     matches = bf.knnMatch(des1, des2, k=2)
 
     good = []
@@ -112,7 +113,7 @@ while True:
                 cv2.imwrite(save_folder + "/plan_" + str(current) + "/" + str(i) + ".png", img)
         prev = img
     else:
-        print('video ended')
+        print("video ended")
         break
     if cv2.waitKey(40) & 0xFF == ord('q'):
         break
@@ -123,11 +124,11 @@ print("detected", len(plans), " plans")
 cap.release()
 
 for i,plan in enumerate(plans):
-    rep, ind, score = representant_greedy(plan, 10, 0.05)
+    rep, ind, score = representant_greedy(plan, 20, 0.05)
     print("found representant with score {} for plan n°{}: image {}".format(score,i+1, ind))
     cv2.imshow("representent", frame)
     
-    if save:
+    if save_repr:
         cv2.imwrite(save_folder + "/resume_{}_score_{:.2f}_.png".format(ind, score), frames[ind])
     
     if cv2.waitKey(40) & 0xFF == ord('q'):
