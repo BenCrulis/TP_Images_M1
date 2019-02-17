@@ -98,7 +98,7 @@ while True:
         img = frame.copy()
         img = greyscale(img)
 
-        cv2.imshow("representent", frame)
+        cv2.imshow("video", frame)
 
         if prev is not None:
             if similarity_sift(img, prev) < 0.15:
@@ -125,7 +125,7 @@ cap.release()
 for i,plan in enumerate(plans):
     rep, ind, score = representant_greedy(plan, 10, 0.05)
     print("found representant with score {} for plan n°{}: image {}".format(score,i+1, ind))
-    cv2.imshow("representant", frame)
+    cv2.imshow("representent", frame)
     
     if save:
         cv2.imwrite(save_folder + "/resume_{}_score_{:.2f}_.png".format(ind, score), frames[ind])
