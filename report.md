@@ -218,13 +218,89 @@ while True:
 ### Question 2
 
 ## Exercice 4 : Calcul de descripteurs SIFT, appariemment de descripteurs et résumé automatique de vidéo
-L'algorithme SIFT permet la construction d'une mesure de similarité entre images en comparant le ration de points sift similaires.
-En calculant les similaritées en tre toute les images on propose ensuite d'appliquer une methode de clustering.
-L'algorithme K-Medoids permet a la fois d'obtenir des groupes d'images (Plans) et des Medoids les representants (Résumé du plan).
+
+L'algorithme SIFT permet la construction d'une mesure de similarité entre images en comparant le ratio de points SIFT représentatifs d'une image et le nombre de points total.
+
 ### Question 1
+
+Pour trouver les changements de plans, il faut réussir à déterminer à quel point une image diffère de celle qui la suit dans la vidéo. Une grande différence à de fortes chances de correspondre à un changement de plan ou "cut". Il suffit ensuite de repérer ces changements qui dépassent un seuil et stocker les images dans différentes séquences correspondant aux plans.
+
+
+
+Malheureusement, cette technique présente de nombreux défauts. Le plus important est qu'elle n'est pas robuste a certains types de vidéos ou le décor ou les objets filmés bougent très vite sans pour autant être un changement de plan. Il faudrait pouvoir déterminer le sens du contenu filmé afin de pouvoir déterminer de manière plus précise si parler de changement de plan est censé. Une méthode qui serait ainsi certainement beaucoup plus efficace serait d'entrainer un réseau de neurone auto-encodeur sur des millier de vidéos afin qu'il en apprenne une sémantique. La sémantique des vidéos pourraient être ainsi codées sous forme de vecteurs de moindre dimensions. La technique de la différence entre deux vecteurs successifs suivi d'un cut pourrait être utilisée à nouveau pour détecter des changements significatif correspondant à un changement de plan.
 
 ### Question 2
 
+Afin de trouver les différents plans de manière plus précise, on calcule les points SIFT d'une image et de la suivante. Nous pouvons ensuite déterminer à quel point l'image est différente et déterminer, à l'aide d'un seuil, si il y a eu un changement de plan.
+
+Le code de la fonction qui calcule la similarité entre deux images en utilisant les points SIFT est le suivant:
+
+```python
+def similarity_sift(img1, img2):
+    kp1, des1 = sift.detectAndCompute(img1, None)
+    kp2, des2 = sift.detectAndCompute(img2, None)
+
+    matches = bf.knnMatch(des1, des2, k=2)
+
+    good = []
+    for m, n in matches:
+        if m.distance < 0.75 * n.distance:
+            good.append([m])
+    return len(good) / float(len(kp2))
+```
+
+La fonction calcule les points SIFT des deux images, utilise un algorithme de clustering appelé KNN pour faire correspondre les différents points. Ensuite on garde les points suffisemment proches grâce à un seuil et on calcule le ratio du nombre de points suffisemment proches sur le nombre de points total ce qui nous donne une valeur de similarité entre 0 et 1.
+
 ### Question 3
 
+On créé une fonction qui, donné une liste d'images avec leur indexes, renvoie l'image qui à la plus forte similarité avec la suivante. Voici son code source:
+
+```python
+def representant_naif(images: list):
+    
+    best = img[0]
+    best_score = 0.0
+    
+    for img1,img2 in zip(images, images[1:]):
+        
+        sc = similarity_sift(img1[0], img2[0])
+        
+        if sc > best_score:
+            best = img1
+            best_score = sc
+    
+    return (best[0], best[1], best_score) # (image, index, score)
+```
+
+Cette fonction naïve possède le gros défaut de ne pas trouver une image représentative de tout le plan mais seulement un moment dans le plan ou il n'y a pas eu de grande différence entre les images. Ceci risque de toujours trouver le moment ou le plan est le plus statique, qui n'est pas forcément l'image recherchée dans notre cas.
+
 ### Question 4
+
+Afin de trouver l'image qui est la plus représentative du plan, qui est une séquence d'image, il faut calculer une similarité pour toutes les paires d'images possibles et prendre l'image qui est en moyenne la lus similaire à toutes les autres. Ceci est une méthode employée dans certains algorithmes de clustering et revient à trouver le médoïde d'un ensemble d'objets. Le calcul de similarité des images sera basé sur la proximité des points SIFT qui sont les points significatif d'une image. On utilise une heuristique pour trouver un médoïde approché pour chaque plan afin d'éviter l'explosition combinatoire du calcul exhaustif.
+
+On utilise donc l'heuristique suivante:
+
+```python
+def representant_random_search(images: list, n_iter: int, sampling_fraction: float):
+    
+    best = rd.choice(images)
+    best_score = 0.0
+    
+    for i in range(n_iter):
+        elected = rd.choice(images)
+                
+        scores = [similarity_sift(img[0], elected[0]) for img in
+            rd.choices(images, k=int(sampling_fraction*len(images)))]
+        
+        sc = sum(scores)/len(scores)
+        
+        if sc > best_score:
+            best_score = sc
+            best = elected
+    
+    return (best[0], best[1], best_score) # (image, index, score)
+```
+
+Cette fonction prend une liste d'image avec leurs indexes en entrée, un nombre de représentants possibles à tirer au hasard (n_iter) et enfin un nombre réel entre 0 et 1 qui correspond à la fraction de la taille de la liste qu'il faut échantilloner à chaque itération. La fonction tire chaque image au hasard dans la liste puis un échantillon aléatoire. Ensuite on calcule la moyenne des similarités du représentant possible avec les images de l'échantillon. Si la similarité est meilleure que la meilleure image rencontrée jusqu'alors, alors elle la remplace. On renvoie ensuite la meilleure image, son indexe et son score.
+
+
