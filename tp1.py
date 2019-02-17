@@ -11,7 +11,7 @@ def compose(*fs):
     return functools.reduce(compose2, fs)
 
 
-jimmy = "/home/alex/PycharmProjects/tp_img_processing/data/jimmy_fallon.mp4"
+jimmy = "jimmy_fallon.mp4"
 
 cap = cv2.VideoCapture(jimmy)
 
