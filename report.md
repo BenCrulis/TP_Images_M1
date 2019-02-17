@@ -216,7 +216,8 @@ while True:
 ![changement de plan](img/changement_plan.png)
 
 ### Question 2
-
+On utilise la même heuristique que dans l'exercice 4 question 4 pour trouver l'image representant le plan au mieux sauf qu'ici on utilise une distance à base de difference pixel à pixxel plutot que d'utiliser des points SIFT.
+L'efficacité de cette methode est probablement assez limité est le problème est dificile a evaluer (Ground truth pour la representation d'un plan est subjective). Quoi qu'il en soit l'heuristique n'est pas en cause c'est la metrique qui est de moindre qualité contrairement a celle de l'exercice 4.
 ## Exercice 4 : Calcul de descripteurs SIFT, appariemment de descripteurs et résumé automatique de vidéo
 
 L'algorithme SIFT permet la construction d'une mesure de similarité entre images en comparant le ratio de points SIFT représentatifs d'une image et le nombre de points total.
@@ -303,4 +304,7 @@ def representant_random_search(images: list, n_iter: int, sampling_fraction: flo
 
 Cette fonction prend une liste d'image avec leurs indexes en entrée, un nombre de représentants possibles à tirer au hasard (n_iter) et enfin un nombre réel entre 0 et 1 qui correspond à la fraction de la taille de la liste qu'il faut échantilloner à chaque itération. La fonction tire chaque image au hasard dans la liste puis un échantillon aléatoire. Ensuite on calcule la moyenne des similarités du représentant possible avec les images de l'échantillon. Si la similarité est meilleure que la meilleure image rencontrée jusqu'alors, alors elle la remplace. On renvoie ensuite la meilleure image, son indexe et son score.
 
+On pourait ameliorer le processus en utilisant un reseau de neuronnes autoencodeur pour vectoriser les points sift et en reduire la dimentionalité en meme temps. On obtiendrait un espace favorable au clustering qui separerait les plans et donnerait des representants (medoids) 
 
+## Code
+Notre [github](https://github.com/BenCrulis/TP_Images_M1) pour le TP.
