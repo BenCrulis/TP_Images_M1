@@ -34,6 +34,22 @@ def similarity_sift(img1, img2):
             good.append([m])
     return len(good) / float(len(kp2))
 
+def representant_naif(images: list):
+    
+    best = img[0]
+    best_score = 0.0
+    
+    for img1,img2 in zip(images, images[1:]):
+        
+        sc = similarity_sift(img1[0], img2[0])
+        
+        if sc > best_score:
+            best = img1
+            best_score = sc
+    
+    return (best[0], best[1], best_score)
+    
+
 def representant(images: list):
     n = len(images)
     distances = np.zeros(shape=[n, n], dtype=np.float32)
@@ -47,7 +63,7 @@ def representant(images: list):
     costs = distances.sum(axis=1)
     return costs.argmin(axis=0)
 
-def representant_greedy(images: list, n_iter: int, sampling_fraction: float):
+def representant_random_search(images: list, n_iter: int, sampling_fraction: float):
     
     best = rd.choice(images)
     best_score = 0.0
@@ -124,7 +140,7 @@ print("detected", len(plans), " plans")
 cap.release()
 
 for i,plan in enumerate(plans):
-    rep, ind, score = representant_greedy(plan, 20, 0.05)
+    rep, ind, score = representant_random_search(plan, 20, 0.05)
     print("found representant with score {} for plan n°{}: image {}".format(score,i+1, ind))
     cv2.imshow("representent", frame)
     
