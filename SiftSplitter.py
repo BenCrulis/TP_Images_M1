@@ -124,7 +124,7 @@ for i,plan in enumerate(plans):
     cv2.imshow("representant", frame)
     
     if save:
-        cv2.imwrite(save_folder + "/resume_{}_score_{.2f}_.png".format(ind, score), rep)
+        cv2.imwrite(save_folder + "/resume_{}_score_{:.2f}_.png".format(ind, score), rep)
     
     if cv2.waitKey(40) & 0xFF == ord('q'):
         break
