@@ -15,7 +15,7 @@ def greyscale(img):
     return g
 
 # Sift "distance"
-sift = cv2.xfeatures2d.SIFT_create()
+sift = cv2.xfeatures2d.SIFT_create(16)
 def similarity_sift(img1, img2):
     kp1, des1 = sift.detectAndCompute(img1, None)
     kp2, des2 = sift.detectAndCompute(img2, None)
@@ -41,7 +41,7 @@ def representant(images: list):
             distances[j, i] = d
     print("Distances compute complete")
     costs = distances.sum(axis=1)
-    return costs.argmin(axis=0, fill_value=10e9)
+    return costs.argmin(axis=0)
 
 i = 0
 limit = 1500
@@ -66,7 +66,7 @@ while True:
         img = greyscale(img)
 
         if prev is not None:
-            if similarity_sift(img, prev) < 0.3:
+            if similarity_sift(img, prev) < 0.25:
                 print("Changement de Plan  à l'image {}".format(i))
                 if save and not os.path.exists(save_folder + "/plan_" + str(current)):
                     os.mkdir(save_folder + "/plan_" + str(current))
@@ -85,3 +85,6 @@ while True:
 
 print("detected", len(plans), " plans")
 cap.release()
+
+for plan in plans:
+    print(representant(plan))
