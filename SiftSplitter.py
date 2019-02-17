@@ -1,11 +1,14 @@
 import numpy as np
 import cv2
 import os
+import random as rd
 
-
-jimmy = "/home/alex/PycharmProjects/tp_img_processing/data/jimmy_fallon.mp4"
-save_folder = "/home/alex/PycharmProjects/tp_img_processing/github/plans_sift"
+jimmy = "jimmy_fallon.mp4"
+save_folder = "./plans_sift"
 save = True
+
+print("starting capture")
+
 cap = cv2.VideoCapture(jimmy)
 
 
@@ -43,6 +46,26 @@ def representant(images: list):
     costs = distances.sum(axis=1)
     return costs.argmin(axis=0)
 
+def representant_greedy(images: list, n_iter: int, sampling_fraction: float):
+    
+    best = rd.choice(images)
+    best_score = 0.0
+    
+    for i in range(n_iter):
+        elected = rd.choice(images)
+                
+        scores = [similarity_sift(img[0], elected[0]) for img in
+            rd.choices(images, k=int(sampling_fraction*len(images)))]
+        
+        sc = sum(scores)/len(scores)
+        
+        if sc > best_score:
+            best_score = sc
+            best = elected
+    
+    return (best[0], best[1], best_score)
+        
+
 i = 0
 limit = 1500
 plans = [[]]
@@ -51,40 +74,57 @@ if save and not os.path.exists(save_folder + "/plan_" + str(current)):
     os.mkdir(save_folder + "/plan_" + str(current))
 prev = None
 
+print("skipping a few frames")
+
 for i in range(96):
     i += 1
     cap.read()
 
+print("beginning main loop at frame {}".format(i))
+
 while True:
     i += 1
+    
+    if i % 100 == 0:
+        print("frame {}".format(i))
+    
     ret, frame = cap.read()
     if frame is None or i > limit:
         break
 
-    if ret:
+    if ret: 
         img = frame.copy()
         img = greyscale(img)
 
+        cv2.imshow("representent", frame)
+
         if prev is not None:
-            if similarity_sift(img, prev) < 0.25:
+            if similarity_sift(img, prev) < 0.15:
                 print("Changement de Plan  à l'image {}".format(i))
                 if save and not os.path.exists(save_folder + "/plan_" + str(current)):
                     os.mkdir(save_folder + "/plan_" + str(current))
                 plans.append([])
                 current += 1
-                plans[current].append(img)
-            else:
-                plans[current].append(img)
+            plans[current].append((img,i))
             if save:
                 cv2.imwrite(save_folder + "/plan_" + str(current) + "/" + str(i) + ".png", img)
-
         prev = img
     else:
         print('video ended')
+        break
+    if cv2.waitKey(40) & 0xFF == ord('q'):
         break
 
 print("detected", len(plans), " plans")
 cap.release()
 
-for plan in plans:
-    print(representant(plan))
+for i,plan in enumerate(plans):
+    rep, ind, score = representant_greedy(plan, 10, 0.05)
+    print("found representant with score {} for plan n°{}: image {}".format(score,i+1, ind))
+    cv2.imshow("representant", frame)
+    
+    if save:
+        cv2.imwrite(save_folder + "/resume_{}_score_{.2f}_.png".format(ind, score), rep)
+    
+    if cv2.waitKey(40) & 0xFF == ord('q'):
+        break
