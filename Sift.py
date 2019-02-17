@@ -69,9 +69,9 @@ def similarity_sift(img1, img2):
 
 
 folder = "/home/alex/PycharmProjects/tp_img_processing/github/plans/all"
-index_offset = 2
 
 imgs = []
+img_map = {}
 
 print("Loading images in memory ...")
 for dirpath, dirnames, filnames in os.walk(folder):
@@ -79,14 +79,12 @@ for dirpath, dirnames, filnames in os.walk(folder):
         if file.endswith(".png"):
             abspath = os.path.join(dirpath, file)
             img = cv2.imread(abspath, 0)
+            img_map[len(img)] = abspath
             imgs.append(img)
 print("Loading complete")
 
 n = len(imgs)
 distance = np.zeros(shape=[n, n], dtype=np.float32)
-
-for i in range(n):
-    distance[i, i] = 0
 
 for i in range(n):
     for j in range(i + 1):
@@ -96,6 +94,6 @@ for i in range(n):
     print("Line", i, "done")
 
 pprint(distance)
-
+pprint(img_map)
 np.save("distance.np", distance)
 
