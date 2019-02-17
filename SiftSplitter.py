@@ -69,6 +69,7 @@ def representant_greedy(images: list, n_iter: int, sampling_fraction: float):
 i = 0
 limit = 1500
 plans = [[]]
+frames = []
 current = 0
 if save and not os.path.exists(save_folder + "/plan_" + str(current)):
     os.mkdir(save_folder + "/plan_" + str(current))
@@ -77,14 +78,14 @@ prev = None
 print("skipping a few frames")
 
 for i in range(96):
+    ret, frame = cap.read()
+    frames.append(frame)
     i += 1
-    cap.read()
+
 
 print("beginning main loop at frame {}".format(i))
 
-while True:
-    i += 1
-    
+while True:    
     if i % 100 == 0:
         print("frame {}".format(i))
     
@@ -92,7 +93,8 @@ while True:
     if frame is None or i > limit:
         break
 
-    if ret: 
+    if ret:
+        frames.append(frame)
         img = frame.copy()
         img = greyscale(img)
 
@@ -114,6 +116,8 @@ while True:
         break
     if cv2.waitKey(40) & 0xFF == ord('q'):
         break
+    i += 1
+
 
 print("detected", len(plans), " plans")
 cap.release()
@@ -124,7 +128,7 @@ for i,plan in enumerate(plans):
     cv2.imshow("representant", frame)
     
     if save:
-        cv2.imwrite(save_folder + "/resume_{}_score_{:.2f}_.png".format(ind, score), rep)
+        cv2.imwrite(save_folder + "/resume_{}_score_{:.2f}_.png".format(ind, score), frames[ind])
     
     if cv2.waitKey(40) & 0xFF == ord('q'):
         break
