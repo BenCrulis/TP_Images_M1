@@ -5,7 +5,7 @@ import os
 
 jimmy = "/home/alex/PycharmProjects/tp_img_processing/data/jimmy_fallon.mp4"
 save_folder = "/home/alex/PycharmProjects/tp_img_processing/github/plans_sift"
-
+save = True
 cap = cv2.VideoCapture(jimmy)
 
 
@@ -47,6 +47,8 @@ i = 0
 limit = 1500
 plans = [[]]
 current = 0
+if save and not os.path.exists(save_folder + "/plan_" + str(current)):
+    os.mkdir(save_folder + "/plan_" + str(current))
 prev = None
 
 for i in range(96):
@@ -66,14 +68,15 @@ while True:
         if prev is not None:
             if similarity_sift(img, prev) < 0.3:
                 print("Changement de Plan  à l'image {}".format(i))
-                if not os.path.exists(save_folder + "/plan_" + str(current)):
+                if save and not os.path.exists(save_folder + "/plan_" + str(current)):
                     os.mkdir(save_folder + "/plan_" + str(current))
                 plans.append([])
                 current += 1
                 plans[current].append(img)
             else:
                 plans[current].append(img)
-            cv2.imwrite(save_folder + "/plan_" + str(current) + "/" + str(i) + ".png", img)
+            if save:
+                cv2.imwrite(save_folder + "/plan_" + str(current) + "/" + str(i) + ".png", img)
 
         prev = img
     else:
